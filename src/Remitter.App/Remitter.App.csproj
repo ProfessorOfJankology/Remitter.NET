@@ -8,4 +8,7 @@
     <ProjectReference Include="..\Remitter.Client\Remitter.Client.csproj" />
     <ProjectReference Include="..\Remitter.Domain\Remitter.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config.example.ini" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

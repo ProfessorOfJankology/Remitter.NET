@@ -1,44 +1,179 @@
 <Window x:Class="Remitter.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Remitter.App.ViewModels"
         Title="Remitter.NET"
-        Width="1100"
-        Height="650"
-        MinWidth="850"
-        MinHeight="500">
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        Width="1500"
+        Height="520"
+        MinWidth="1100"
+        MinHeight="360"
+        Loaded="Window_Loaded">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="MinHeight" Value="30" />
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="DetailsVisibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                    <Setter Property="DetailsVisibility" Value="Visible"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsDuplicate}" Value="True">
+                    <Setter Property="Background" Value="#FFF2A8"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsCancelled}" Value="True">
+                    <Setter Property="Foreground" Value="Gray"/>
+                    <Setter Property="FontStyle" Value="Italic"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                    <Setter Property="Foreground" Value="Green"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="StatusButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsError}" Value="True">
+                    <Setter Property="Foreground" Value="#B00000"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-        <StackPanel>
-            <TextBlock Text="Remitter.NET"
-                       FontSize="24"
-                       FontWeight="SemiBold" />
-            <TextBlock Text="Windows client foundation"
-                       Margin="0,4,0,12"
-                       Opacity="0.65" />
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top">
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Style="{StaticResource ToolbarButton}" Content="Add" Click="AddToolbar_Click"/>
+                <Button Grid.Column="1" Style="{StaticResource ToolbarButton}" Content="Refresh" Click="Refresh_Click"/>
+                <Button Grid.Column="2" Style="{StaticResource ToolbarButton}" Content="Recheck" Click="Recheck_Click"/>
+                <Button Grid.Column="3" Style="{StaticResource ToolbarButton}" Content="Clean Paid" Click="CleanPaid_Click"/>
+                <Button Grid.Column="4" Style="{StaticResource ToolbarButton}" Content="Remove Selected" Click="RemoveSelected_Click"/>
+                <Button Grid.Column="5" Style="{StaticResource ToolbarButton}" Content="Settings" Click="Settings_Click"/>
+                <TextBlock Grid.Column="6" x:Name="OperatorText" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#555" Text="HCN user migration pending"/>
+                <Button Grid.Column="8" x:Name="RemitButton" Style="{StaticResource ToolbarButton}" Content="Remit" IsEnabled="False"
+                        ToolTip="Remit and persistent recovery are the next parity phase."/>
+            </Grid>
+
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="260"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Ellipse x:Name="StatusDot" Grid.Column="0" Width="12" Height="12" Fill="Goldenrod" Margin="2,0,8,0" VerticalAlignment="Center"
+                         ToolTip="{Binding ElementName=StatusText, Path=Text}"/>
+                <TextBlock Grid.Column="1" Text="Invoice Number:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox Grid.Column="2" x:Name="InvoiceEntry" Width="100" Margin="0,0,10,0" KeyDown="QuickEntry_KeyDown"/>
+                <TextBlock Grid.Column="3" Text="Amount:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox Grid.Column="4" x:Name="AmountEntry" Width="100" Margin="0,0,10,0" KeyDown="QuickEntry_KeyDown"/>
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+                    <TextBlock Text="Comment:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox x:Name="CommentEntry" Width="190" KeyDown="QuickEntry_KeyDown"/>
+                </StackPanel>
+                <TextBlock Grid.Column="6" Text="Pay Type:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                <ComboBox Grid.Column="7" x:Name="PayTypeEntry" SelectedIndex="0" KeyDown="QuickEntry_KeyDown">
+                    <ComboBoxItem Tag="7">Direct Deposit</ComboBoxItem>
+                    <ComboBoxItem Tag="0">Cash</ComboBoxItem>
+                    <ComboBoxItem Tag="8">EFTPOS Manual</ComboBoxItem>
+                </ComboBox>
+                <Button Grid.Column="8" Content="+" Width="34" Margin="6,0,0,0" Click="QuickAdd_Click"/>
+            </Grid>
         </StackPanel>
 
-        <DataGrid Grid.Row="1"
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+            <TextBlock Text="Expand invoices for services. Allocation editing, invoice search/edit, imports, operator mapping and remit recovery are being ported in subsequent parity phases."
+                       Foreground="#666"/>
+            <TextBlock x:Name="StatusText" Margin="0,4,0,0" Text="Connecting to shared queue..."/>
+        </StackPanel>
+
+        <DataGrid x:Name="PaymentsGrid"
+                  ItemsSource="{Binding Rows}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  CanUserAddRows="False">
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  HeadersVisibility="Column"
+                  EnableRowVirtualization="True"
+                  MouseDoubleClick="PaymentsGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Invoice" Binding="{Binding InvoiceNo}" />
-                <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
-                <DataGridTextColumn Header="Comment" Binding="{Binding Comment}" Width="*" />
-                <DataGridTextColumn Header="Pay Type" Binding="{Binding PayType}" />
-                <DataGridTextColumn Header="Source" Binding="{Binding Source}" />
+                <DataGridTemplateColumn Width="34">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ToggleButton IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                                          Visibility="{Binding HasServices, Converter={StaticResource BoolToVisibility}}"
+                                          Content="▶" Width="22" Height="22"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Invoice" Binding="{Binding Invoice}" SortMemberPath="Payment.InvoiceNo"/>
+                <DataGridTextColumn Header="Amount Paid" Binding="{Binding Amount}" SortMemberPath="Payment.Amount"/>
+                <DataGridTextColumn Header="Pay Type" Binding="{Binding PayType}"/>
+                <DataGridTextColumn Header="Comment" Binding="{Binding Comment}" Width="180"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160"/>
+                <DataGridTextColumn Header="DOB" Binding="{Binding Dob}"/>
+                <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="160"/>
+                <DataGridTextColumn Header="Payer" Binding="{Binding Payer}"/>
+                <DataGridTextColumn Header="Total Fee" Binding="{Binding Fee}"/>
+                <DataGridTextColumn Header="Paid" Binding="{Binding Paid}"/>
+                <DataGridTextColumn Header="Outstanding" Binding="{Binding Outstanding}"/>
+                <DataGridTemplateColumn Header="Status" Width="135">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource StatusButton}" Content="{Binding Status}" Click="Status_Click"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
-        </DataGrid>
 
-        <TextBlock Grid.Row="2"
-                   Margin="0,12,0,0"
-                   Text="Backend connection not configured."
-                   Opacity="0.65" />
-    </Grid>
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate DataType="{x:Type vm:PaymentRowViewModel}">
+                    <Border Margin="32,0,0,4" Padding="4" BorderBrush="#DDD" BorderThickness="0,0,0,1">
+                        <DataGrid ItemsSource="{Binding Services}" AutoGenerateColumns="False" IsReadOnly="True"
+                                  CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Item No" Binding="{Binding ItemNumber}"/>
+                                <DataGridTextColumn Header="Service Description" Binding="{Binding Description}" Width="220"/>
+                                <DataGridTextColumn Header="Fee" Binding="{Binding Fee}"/>
+                                <DataGridTextColumn Header="Tax" Binding="{Binding Tax}"/>
+                                <DataGridTextColumn Header="Paid" Binding="{Binding Paid}"/>
+                                <DataGridTextColumn Header="Tax Paid" Binding="{Binding TaxPaid}"/>
+                                <DataGridTextColumn Header="Outstanding" Binding="{Binding Outstanding}"/>
+                                <DataGridTextColumn Header="Allocation" Binding="{Binding Allocation}"/>
+                                <DataGridTextColumn Header="Tax Allocation" Binding="{Binding TaxAllocation}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
+    </DockPanel>
 </Window>
