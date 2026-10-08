@@ -1,0 +1,24 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+artifacts/
+
+## Rider
+.idea/
+*.sln.iml
+
+## OS
+Thumbs.db
+.DS_Store
+
+## Local settings / secrets
+appsettings.Local.json
+*.local.json
+*.secrets.json
+.env
