@@ -54,3 +54,34 @@ public sealed class RemovePaymentsRequest
 {
     [JsonPropertyName("items")] public List<PaymentVersion> Items { get; set; } = [];
 }
+
+public sealed class OperatorUser
+{
+    [JsonPropertyName("hcn_username")] public string HcnUsername { get; set; } = "";
+    [JsonPropertyName("resource_id")] public int ResourceId { get; set; }
+    [JsonPropertyName("display_name")] public string DisplayName { get; set; } = "";
+    [JsonPropertyName("verification")] public string Verification { get; set; } = "";
+    [JsonPropertyName("windows_identity")] public string? WindowsIdentity { get; set; }
+    [JsonPropertyName("updated_at")] public string? UpdatedAt { get; set; }
+}
+
+public sealed class OperatorMappingResponse
+{
+    [JsonPropertyName("mapping")] public OperatorUser? Mapping { get; set; }
+}
+
+public sealed class OperatorUserResponse
+{
+    [JsonPropertyName("user")] public OperatorUser User { get; set; } = new();
+}
+
+public sealed class ResolveOperatorRequest
+{
+    [JsonPropertyName("hcn_username")] public string HcnUsername { get; set; } = "";
+}
+
+public sealed class SaveOperatorMappingRequest
+{
+    [JsonPropertyName("windows_identity")] public string WindowsIdentity { get; set; } = "";
+    [JsonPropertyName("hcn_username")] public string HcnUsername { get; set; } = "";
+}
