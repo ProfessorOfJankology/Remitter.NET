@@ -114,7 +114,7 @@
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
-            <TextBlock Text="Expand invoices for services. Allocation editing, invoice search/edit, imports, operator mapping and remit recovery are being ported in subsequent parity phases."
+            <TextBlock Text="Expand invoices for services. Imports, full settings and remit recovery are being ported in subsequent parity phases."
                        Foreground="#666"/>
             <TextBlock x:Name="StatusText" Margin="0,4,0,0" Text="Connecting to shared queue..."/>
         </StackPanel>
@@ -164,20 +164,28 @@
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate DataType="{x:Type vm:PaymentRowViewModel}">
                     <Border Margin="32,0,0,4" Padding="4" BorderBrush="#DDD" BorderThickness="0,0,0,1">
-                        <DataGrid ItemsSource="{Binding Services}" AutoGenerateColumns="False" IsReadOnly="True"
-                                  CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Item No" Binding="{Binding ItemNumber}"/>
-                                <DataGridTextColumn Header="Service Description" Binding="{Binding Description}" Width="220"/>
-                                <DataGridTextColumn Header="Fee" Binding="{Binding Fee}"/>
-                                <DataGridTextColumn Header="Tax" Binding="{Binding Tax}"/>
-                                <DataGridTextColumn Header="Paid" Binding="{Binding Paid}"/>
-                                <DataGridTextColumn Header="Tax Paid" Binding="{Binding TaxPaid}"/>
-                                <DataGridTextColumn Header="Outstanding" Binding="{Binding Outstanding}"/>
-                                <DataGridTextColumn Header="Allocation" Binding="{Binding Allocation}"/>
-                                <DataGridTextColumn Header="Tax Allocation" Binding="{Binding TaxAllocation}"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Top"
+                                    Content="Edit service allocation…"
+                                    HorizontalAlignment="Left"
+                                    Padding="8,3"
+                                    Margin="0,0,0,5"
+                                    Click="EditAllocation_Click"/>
+                            <DataGrid ItemsSource="{Binding Services}" AutoGenerateColumns="False" IsReadOnly="True"
+                                      CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Item No" Binding="{Binding ItemNumber}"/>
+                                    <DataGridTextColumn Header="Service Description" Binding="{Binding Description}" Width="220"/>
+                                    <DataGridTextColumn Header="Fee" Binding="{Binding Fee}"/>
+                                    <DataGridTextColumn Header="Tax" Binding="{Binding Tax}"/>
+                                    <DataGridTextColumn Header="Paid" Binding="{Binding Paid}"/>
+                                    <DataGridTextColumn Header="Tax Paid" Binding="{Binding TaxPaid}"/>
+                                    <DataGridTextColumn Header="Outstanding" Binding="{Binding Outstanding}"/>
+                                    <DataGridTextColumn Header="Allocation" Binding="{Binding Allocation}"/>
+                                    <DataGridTextColumn Header="Tax Allocation" Binding="{Binding TaxAllocation}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
                     </Border>
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
