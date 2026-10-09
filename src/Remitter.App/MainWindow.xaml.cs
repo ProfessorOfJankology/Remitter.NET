@@ -260,11 +260,17 @@ public partial class MainWindow : Window
         await AddQuickEntryAsync();
     }
 
-    private void AddToolbar_Click(object sender, RoutedEventArgs e)
+    private async void AddToolbar_Click(object sender, RoutedEventArgs e)
     {
-        InvoiceEntry.Focus();
-        InvoiceEntry.SelectAll();
-        SetStatus("Quick add focused. Invoice search/add window is the next editor parity phase.", Brushes.Goldenrod);
+        if (_api is null || _manualAdd is null || _busy)
+            return;
+
+        var dialog = new PaymentDialog(this, _api, _manualAdd);
+        if (dialog.ShowDialog() == true && dialog.Saved)
+        {
+            SetStatus("Payment saved. Invoice check queued.", Brushes.ForestGreen);
+            await RefreshAsync(true);
+        }
     }
 
     private async void Recheck_Click(object sender, RoutedEventArgs e)
@@ -384,10 +390,31 @@ public partial class MainWindow : Window
         MessageBox.Show(this, row.StatusDetail, "Payment status", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private void PaymentsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private async void PaymentsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (PaymentsGrid.SelectedItem is PaymentRowViewModel)
-            SetStatus("Invoice search/edit with leased rows is the next parity phase.", Brushes.Goldenrod);
+        if (_api is null || _manualAdd is null || _busy || PaymentsGrid.SelectedItem is not PaymentRowViewModel row)
+            return;
+
+        PaymentLeaseResponse lease;
+        try
+        {
+            SetBusy(true, "Acquiring edit lease…");
+            lease = await _api.AcquirePaymentLeaseAsync(row.Id);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, SafeMessage(ex), "Cannot edit payment", MessageBoxButton.OK, MessageBoxImage.Error);
+            SetStatus("Payment could not be opened for editing.", Brushes.Firebrick);
+            return;
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+
+        var dialog = new PaymentDialog(this, _api, _manualAdd, lease);
+        dialog.ShowDialog();
+        await RefreshAsync(true);
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
