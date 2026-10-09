@@ -4,19 +4,30 @@ Remitter.NET is a replacement for the Windows Tkinter client, not a replacement 
 
 Both clients may coexist during migration and should use the same backend API where practical.
 
-## Initial milestones
+## Current parity status
 
-1. Establish application configuration, Hub URL, bearer token and connection-status handling.
-2. Load and display the shared queue.
-3. Reproduce existing status classification and currency formatting.
-4. Add selection, refresh, recheck and removal workflows.
-5. Add expandable invoice rows with service-level financial detail.
-6. Add manual entry and HCN search.
-7. Port CSV/Excel import UX.
-8. Implement Remit submission while preserving backend idempotency and uncertain-outcome behaviour.
-9. Add settings UI.
-10. Add remittance/email viewing and ESCompose integration.
-11. Retire the Python desktop client only after behavioural parity is verified.
+Completed in the WPF client:
+
+- application configuration, Hub URL, bearer token and connection-status handling
+- shared queue loading and background refresh
+- current status classification, currency formatting and queue styling
+- selection-preserving refresh, recheck, removal and paid-row cleanup
+- expandable invoice rows with service-level financial detail
+- durable manual quick entry
+- HCN operator mapping, verification and remembered/session-only user selection
+- bounded HCN invoice search with paging and paid/cancelled filters
+- leased payment add/edit/resolve workflow
+- manual and automatic service-allocation editing with backend leases
+- preservation of orphaned manual allocation instructions for server validation
+
+Still to port before replacement:
+
+1. CSV/Excel import UX and WorkSafe import entry point.
+2. Full Settings dialog with validation, atomic save, connection testing and Change User entry.
+3. Remit submission with duplicate acknowledgement, persistent request identity and uncertain-outcome recovery.
+4. Remaining desktop interaction parity such as copy behaviour, exact selection semantics and auto-grow.
+5. Remittance/email viewing and ESCompose executable integration.
+6. Behavioural parity verification before retiring the Python desktop.
 
 ## Migration rule
 
