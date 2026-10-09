@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Remitter.Client;
 using Remitter.Domain.Models;
 using Remitter.Domain.Presentation;
@@ -13,8 +14,10 @@ public partial class AllocationDialog : Window
     private readonly RemitterApiClient _api;
     private readonly PaymentLeaseResponse _lease;
     private readonly Dictionary<string, string> _allValues;
+    private readonly DispatcherTimer _leaseTimer = new();
     private bool _busy;
     private bool _leaseActive = true;
+    private bool _manualBlocked;
 
     public ObservableCollection<AllocationRow> Rows { get; } = [];
     public bool Saved { get; private set; }
@@ -48,12 +51,18 @@ public partial class AllocationDialog : Window
             payment.AllocationPlan.InvoiceNo != payment.InvoiceNo)
         {
             NoticeText.Text = "Invoice changed. Reset to Automatic before assigning a service plan to another invoice.";
+            _manualBlocked = true;
             SaveButton.IsEnabled = false;
         }
         else
         {
             NoticeText.Text = "Edit gross allocations only. Tax is recalculated and validated by the server.";
         }
+
+        var renewSeconds = Math.Max(3, lease.LeaseSeconds / 3);
+        _leaseTimer.Interval = TimeSpan.FromSeconds(renewSeconds);
+        _leaseTimer.Tick += LeaseTimer_Tick;
+        _leaseTimer.Start();
 
         Closed += AllocationDialog_Closed;
     }
@@ -128,6 +137,11 @@ public partial class AllocationDialog : Window
     {
         if (_busy)
             return;
+        if (mode == "manual" && _manualBlocked)
+        {
+            NoticeText.Text = "Invoice changed. Reset to Automatic before assigning a service plan to another invoice.";
+            return;
+        }
 
         try
         {
@@ -180,8 +194,24 @@ public partial class AllocationDialog : Window
         DialogResult = false;
     }
 
+    private async void LeaseTimer_Tick(object? sender, EventArgs e)
+    {
+        if (!_leaseActive || _busy)
+            return;
+
+        try
+        {
+            await _api.AcquirePaymentLeaseAsync(_lease.Payment.Id, _lease.Token);
+        }
+        catch
+        {
+            NoticeText.Text = "Allocation editing lease could not be renewed. Save will validate ownership; copy values before cancelling if needed.";
+        }
+    }
+
     private void AllocationDialog_Closed(object? sender, EventArgs e)
     {
+        _leaseTimer.Stop();
         if (_leaseActive)
             _ = ReleaseLeaseBestEffortAsync();
     }
@@ -217,7 +247,7 @@ public partial class AllocationDialog : Window
     {
         _busy = busy;
         ServicesGrid.IsEnabled = !busy;
-        SaveButton.IsEnabled = !busy;
+        SaveButton.IsEnabled = !busy && !_manualBlocked;
         ResetButton.IsEnabled = !busy;
         CancelButton.IsEnabled = !busy;
     }
