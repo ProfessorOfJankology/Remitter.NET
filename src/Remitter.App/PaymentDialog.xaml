@@ -1,0 +1,136 @@
+<Window x:Class="Remitter.App.PaymentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Payment"
+        Width="1120"
+        Height="650"
+        MinWidth="900"
+        MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Invoice"/>
+                    <TextBox x:Name="InvoiceBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="Reference / claim" Margin="0,8,0,0"/>
+                    <TextBox x:Name="ReferenceBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="Original billed" Margin="0,8,0,0"/>
+                    <TextBox x:Name="FeeBox" KeyDown="Search_KeyDown"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                    <TextBlock Text="Surname"/>
+                    <TextBox x:Name="SurnameBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="Payer code" Margin="0,8,0,0"/>
+                    <TextBox x:Name="PayerBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="Outstanding" Margin="0,8,0,0"/>
+                    <TextBox x:Name="OutstandingBox" KeyDown="Search_KeyDown"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                    <TextBlock Text="First name"/>
+                    <TextBox x:Name="FirstNameBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="DOB (YYYY-MM-DD)" Margin="0,8,0,0"/>
+                    <TextBox x:Name="DobBox" KeyDown="Search_KeyDown"/>
+                    <TextBlock Text="Visit date (YYYY-MM-DD)" Margin="0,8,0,0"/>
+                    <TextBox x:Name="VisitDateBox" KeyDown="Search_KeyDown"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Width="145" Margin="12,0,0,0">
+                    <Button Content="Search" Padding="8,5" Margin="0,18,0,5" Click="Search_Click"/>
+                    <Button Content="Clear search" Padding="8,5" Margin="0,0,0,10" Click="ClearSearch_Click"/>
+                    <CheckBox x:Name="IncludeCancelledCheckBox" Content="Show cancelled" Margin="0,3"/>
+                    <CheckBox x:Name="IncludePaidCheckBox" Content="Show paid" Margin="0,3"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,10,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="CandidateNotice" VerticalAlignment="Center" Foreground="#555"/>
+                <TextBlock Grid.Column="1" Text="Maximum 20 results per page" VerticalAlignment="Center" Margin="8,0"/>
+                <Button Grid.Column="2" x:Name="PreviousButton" Content="Previous" Padding="8,4" Margin="4,0" IsEnabled="False" Click="Previous_Click"/>
+                <Button Grid.Column="3" x:Name="NextButton" Content="Next" Padding="8,4" Margin="4,0,0,0" IsEnabled="False" Click="Next_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom">
+            <TextBlock x:Name="AssociationText" FontWeight="SemiBold" Margin="0,6,0,3"/>
+            <TextBlock x:Name="SourceText" Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Amount"/>
+                    <TextBox x:Name="AmountBox" KeyDown="Save_KeyDown"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                    <TextBlock Text="Comment"/>
+                    <TextBox x:Name="CommentBox" KeyDown="Save_KeyDown"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                    <TextBlock Text="Pay Type"/>
+                    <ComboBox x:Name="PayTypeBox" SelectedIndex="0" KeyDown="Save_KeyDown">
+                        <ComboBoxItem Tag="7">Direct Deposit</ComboBoxItem>
+                        <ComboBoxItem Tag="0">Cash</ComboBoxItem>
+                        <ComboBoxItem Tag="8">EFTPOS Manual</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+                <Button Grid.Column="3" Content="Use outstanding" Padding="9,5" VerticalAlignment="Bottom" Click="UseOutstanding_Click"/>
+            </Grid>
+
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="NoticeText" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                <Button Grid.Column="1" x:Name="SaveButton" Content="Save" MinWidth="90" Padding="10,5" Margin="0,0,8,0" Click="Save_Click"/>
+                <Button Grid.Column="2" x:Name="CancelButton" Content="Cancel" MinWidth="90" Padding="10,5" Click="Cancel_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <DataGrid x:Name="CandidatesGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  CanUserAddRows="False"
+                  Margin="0,0,0,4"
+                  SelectionChanged="CandidatesGrid_SelectionChanged"
+                  MouseDoubleClick="CandidatesGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Invoice" Binding="{Binding InvoiceNo}"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="DOB" Binding="{Binding Dob}"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding VisitDate}"/>
+                <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="150"/>
+                <DataGridTextColumn Header="Payer" Binding="{Binding Payer}"/>
+                <DataGridTextColumn Header="Items" Binding="{Binding ItemNumbers}" Width="120"/>
+                <DataGridTextColumn Header="Fee" Binding="{Binding Fee}"/>
+                <DataGridTextColumn Header="Paid" Binding="{Binding Paid}"/>
+                <DataGridTextColumn Header="Outstanding" Binding="{Binding Outstanding}"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
