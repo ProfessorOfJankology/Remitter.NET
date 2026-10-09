@@ -67,7 +67,14 @@
                 <Button Grid.Column="3" Style="{StaticResource ToolbarButton}" Content="Clean Paid" Click="CleanPaid_Click"/>
                 <Button Grid.Column="4" Style="{StaticResource ToolbarButton}" Content="Remove Selected" Click="RemoveSelected_Click"/>
                 <Button Grid.Column="5" Style="{StaticResource ToolbarButton}" Content="Settings" Click="Settings_Click"/>
-                <TextBlock Grid.Column="6" x:Name="OperatorText" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#555" Text="HCN user migration pending"/>
+                <Button Grid.Column="6"
+                        x:Name="OperatorButton"
+                        Margin="8,0,0,0"
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Content="HCN user unresolved"
+                        ToolTip="View or change the HCN user attributed to remittance actions."
+                        Click="ChangeUser_Click"/>
                 <Button Grid.Column="8" x:Name="RemitButton" Style="{StaticResource ToolbarButton}" Content="Remit" IsEnabled="False"
                         ToolTip="Remit and persistent recovery are the next parity phase."/>
             </Grid>
