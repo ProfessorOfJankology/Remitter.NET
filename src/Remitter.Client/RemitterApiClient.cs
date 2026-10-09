@@ -79,6 +79,13 @@ public sealed class RemitterApiClient
     public Task<InvoiceSearchResponse> SearchInvoicesAsync(InvoiceSearchRequest request, CancellationToken ct = default)
         => SendAsync<InvoiceSearchResponse>(HttpMethod.Post, "/api/invoices/search", request, ct);
 
+    public Task<PaymentMutationResponse> UpdateAllocationsAsync(string paymentId, UpdateAllocationsRequest request, CancellationToken ct = default)
+        => SendAsync<PaymentMutationResponse>(
+            HttpMethod.Patch,
+            $"/api/payments/{Uri.EscapeDataString(paymentId)}/allocations",
+            request,
+            ct);
+
     public async Task ReleasePaymentLeaseAsync(string paymentId, string leaseToken, CancellationToken ct = default)
     {
         await SendAsync<JsonElement>(
