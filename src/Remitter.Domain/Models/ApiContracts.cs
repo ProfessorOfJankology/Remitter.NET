@@ -148,3 +148,12 @@ public sealed class InvoiceSearchItem
     [JsonPropertyName("outstanding")] public string? Outstanding { get; set; }
     [JsonPropertyName("search_status")] public string? SearchStatus { get; set; }
 }
+
+
+public sealed class UpdateAllocationsRequest
+{
+    [JsonPropertyName("version")] public int Version { get; set; }
+    [JsonPropertyName("lease_token")] public string LeaseToken { get; set; } = "";
+    [JsonPropertyName("allocation_mode")] public string AllocationMode { get; set; } = "manual";
+    [JsonPropertyName("allocations")] public Dictionary<string, string> Allocations { get; set; } = [];
+}
