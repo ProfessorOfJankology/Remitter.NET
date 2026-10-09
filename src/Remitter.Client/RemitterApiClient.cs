@@ -88,11 +88,16 @@ public sealed class RemitterApiClient
 
     public async Task ReleasePaymentLeaseAsync(string paymentId, string leaseToken, CancellationToken ct = default)
     {
-        await SendAsync<JsonElement>(
+        using var request = new HttpRequestMessage(
             HttpMethod.Delete,
-            $"/api/payments/{Uri.EscapeDataString(paymentId)}/lock",
-            new PaymentLeaseRequest { LeaseToken = leaseToken },
-            ct);
+            $"/api/payments/{Uri.EscapeDataString(paymentId)}/lock")
+        {
+            Content = JsonContent.Create(new PaymentLeaseRequest { LeaseToken = leaseToken }, options: JsonOptions)
+        };
+
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+            throw await CreateApiExceptionAsync(response, ct);
     }
 
     public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken ct = default)
@@ -103,20 +108,23 @@ public sealed class RemitterApiClient
 
         using var response = await _httpClient.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode)
-        {
-            var message = response.ReasonPhrase ?? "Request failed.";
-            try
-            {
-                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-                if (doc.RootElement.TryGetProperty("error", out var error))
-                    message = error.GetString() ?? message;
-            }
-            catch (JsonException) { }
-
-            throw new RemitterApiException(message, (int)response.StatusCode);
-        }
+            throw await CreateApiExceptionAsync(response, ct);
 
         return await response.Content.ReadFromJsonAsync<T>(JsonOptions, ct)
             ?? throw new InvalidOperationException("Server returned an empty response.");
+    }
+
+    private static async Task<RemitterApiException> CreateApiExceptionAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        var message = response.ReasonPhrase ?? "Request failed.";
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (doc.RootElement.TryGetProperty("error", out var error))
+                message = error.GetString() ?? message;
+        }
+        catch (JsonException) { }
+
+        return new RemitterApiException(message, (int)response.StatusCode);
     }
 }
