@@ -62,6 +62,32 @@ public sealed class RemitterApiClient
             },
             ct);
 
+    public Task<PaymentLeaseResponse> AcquirePaymentLeaseAsync(string paymentId, string? leaseToken = null, CancellationToken ct = default)
+        => SendAsync<PaymentLeaseResponse>(
+            HttpMethod.Post,
+            $"/api/payments/{Uri.EscapeDataString(paymentId)}/lock",
+            new PaymentLeaseRequest { LeaseToken = leaseToken },
+            ct);
+
+    public Task<PaymentMutationResponse> UpdatePaymentAsync(string paymentId, UpdatePaymentRequest request, CancellationToken ct = default)
+        => SendAsync<PaymentMutationResponse>(
+            HttpMethod.Patch,
+            $"/api/payments/{Uri.EscapeDataString(paymentId)}",
+            request,
+            ct);
+
+    public Task<InvoiceSearchResponse> SearchInvoicesAsync(InvoiceSearchRequest request, CancellationToken ct = default)
+        => SendAsync<InvoiceSearchResponse>(HttpMethod.Post, "/api/invoices/search", request, ct);
+
+    public async Task ReleasePaymentLeaseAsync(string paymentId, string leaseToken, CancellationToken ct = default)
+    {
+        await SendAsync<JsonElement>(
+            HttpMethod.Delete,
+            $"/api/payments/{Uri.EscapeDataString(paymentId)}/lock",
+            new PaymentLeaseRequest { LeaseToken = leaseToken },
+            ct);
+    }
+
     public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(method, path);
