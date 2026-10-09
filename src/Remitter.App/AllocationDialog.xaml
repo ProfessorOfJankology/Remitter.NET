@@ -1,0 +1,49 @@
+<Window x:Class="Remitter.App.AllocationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Service Allocation"
+        Width="880"
+        Height="520"
+        MinWidth="760"
+        MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock x:Name="SummaryText" FontWeight="SemiBold"/>
+            <TextBlock x:Name="NoticeText" Margin="0,4,0,0" Foreground="#666" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="ResetButton" Content="Reset to Automatic" Padding="10,5" Margin="0,0,8,0" Click="Reset_Click"/>
+            <Button x:Name="SaveButton" Content="Save Manual Split" Padding="10,5" Margin="0,0,8,0" Click="Save_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel" Padding="10,5" Click="Cancel_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="ServicesGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  CellEditEnding="ServicesGrid_CellEditEnding">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Item No" Binding="{Binding ItemNumber}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="220" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Outstanding" Binding="{Binding OutstandingDisplay}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Current Tax" Binding="{Binding TaxAllocationDisplay}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Gross Allocation" Binding="{Binding Allocation, UpdateSourceTrigger=PropertyChanged}" Width="140"/>
+                <DataGridTemplateColumn Header="Actions" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Fill" Padding="6,2" Margin="0,0,5,0" Click="Fill_Click"/>
+                                <Button Content="Zero" Padding="6,2" Click="Zero_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
