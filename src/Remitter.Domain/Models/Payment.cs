@@ -21,6 +21,7 @@ public sealed class Payment
     [JsonPropertyName("remit_exclusion")] public string? RemitExclusion { get; set; }
     [JsonPropertyName("check")] public InvoiceCheck? Check { get; set; }
     [JsonPropertyName("allocation_mode")] public string? AllocationMode { get; set; }
+    [JsonPropertyName("allocation_plan")] public AllocationPlan? AllocationPlan { get; set; }
     [JsonPropertyName("allocation")] public AllocationPreview? Allocation { get; set; }
     [JsonPropertyName("source_metadata")] public Dictionary<string, object?>? SourceMetadata { get; set; }
 }
@@ -71,4 +72,11 @@ public sealed class AllocationPreview
     [JsonPropertyName("message")] public string? Message { get; set; }
     [JsonPropertyName("gross")] public Dictionary<string, string>? Gross { get; set; }
     [JsonPropertyName("tax")] public Dictionary<string, string>? Tax { get; set; }
+}
+
+
+public sealed class AllocationPlan
+{
+    [JsonPropertyName("invoice_no")] public int? InvoiceNo { get; set; }
+    [JsonPropertyName("allocations")] public Dictionary<string, string>? Allocations { get; set; }
 }
