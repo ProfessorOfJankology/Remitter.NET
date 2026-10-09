@@ -37,6 +37,31 @@ public sealed class RemitterApiClient
     public Task<BatchResultResponse> RemovePaymentsAsync(RemovePaymentsRequest request, CancellationToken ct = default)
         => SendAsync<BatchResultResponse>(HttpMethod.Post, "/api/payments/remove", request, ct);
 
+    public Task<OperatorMappingResponse> GetOperatorMappingAsync(string windowsIdentity, CancellationToken ct = default)
+        => SendAsync<OperatorMappingResponse>(
+            HttpMethod.Get,
+            "/api/users/mapping?windows_identity=" + Uri.EscapeDataString(windowsIdentity ?? ""),
+            null,
+            ct);
+
+    public Task<OperatorUserResponse> ResolveOperatorAsync(string hcnUsername, CancellationToken ct = default)
+        => SendAsync<OperatorUserResponse>(
+            HttpMethod.Post,
+            "/api/users/resolve",
+            new ResolveOperatorRequest { HcnUsername = hcnUsername },
+            ct);
+
+    public Task<OperatorUserResponse> SaveOperatorMappingAsync(string windowsIdentity, string hcnUsername, CancellationToken ct = default)
+        => SendAsync<OperatorUserResponse>(
+            HttpMethod.Put,
+            "/api/users/mapping",
+            new SaveOperatorMappingRequest
+            {
+                WindowsIdentity = windowsIdentity,
+                HcnUsername = hcnUsername
+            },
+            ct);
+
     public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(method, path);
