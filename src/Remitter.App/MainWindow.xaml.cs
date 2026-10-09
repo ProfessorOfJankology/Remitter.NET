@@ -20,6 +20,9 @@ public partial class MainWindow : Window
     private ManualAddRetryStore? _manualAdd;
     private RemitterConfig? _config;
     private readonly DispatcherTimer _refreshTimer = new();
+    private readonly string _windowsIdentity =
+        ((Environment.UserDomainName + "\\" + Environment.UserName).Trim('\\')).ToLowerInvariant();
+    private OperatorUser? _currentOperator;
     private bool _busy;
 
     public ObservableCollection<PaymentRowViewModel> Rows { get; } = [];
@@ -43,8 +46,7 @@ public partial class MainWindow : Window
                 Timeout = TimeSpan.FromSeconds(_config.TimeoutSeconds)
             };
 
-            var actor = ((Environment.UserDomainName + "\\" + Environment.UserName).Trim('\\')).ToLowerInvariant();
-            _api = new RemitterApiClient(http, _config.Token, actor, "desktop-dotnet:" + Environment.MachineName);
+            _api = new RemitterApiClient(http, _config.Token, _windowsIdentity, "desktop-dotnet:" + Environment.MachineName);
             _manualAdd = new ManualAddRetryStore(_config.BaseUrl);
 
             _refreshTimer.Interval = TimeSpan.FromSeconds(_config.RefreshSeconds);
@@ -52,6 +54,7 @@ public partial class MainWindow : Window
             _refreshTimer.Start();
 
             await RefreshAsync(false);
+            await LoadOperatorAsync(promptIfMissing: true);
         }
         catch (Exception ex)
         {
@@ -140,6 +143,68 @@ public partial class MainWindow : Window
             return Brushes.DarkOrange;
         return Brushes.ForestGreen;
     }
+
+    private async Task LoadOperatorAsync(bool promptIfMissing)
+    {
+        if (_api is null)
+            return;
+
+        try
+        {
+            var response = await _api.GetOperatorMappingAsync(_windowsIdentity);
+            if (response.Mapping is not null)
+            {
+                AcceptOperator(response.Mapping);
+                return;
+            }
+
+            if (promptIfMissing)
+                ShowOperatorDialog();
+            else
+                SetOperatorUnresolved();
+        }
+        catch (Exception)
+        {
+            SetOperatorUnresolved();
+            SetStatus("User mapping unavailable. Use HCN user to retry; queue remains available.", Brushes.DarkOrange);
+        }
+    }
+
+    private void AcceptOperator(OperatorUser user)
+    {
+        _currentOperator = user;
+        var name = string.IsNullOrWhiteSpace(user.DisplayName) ? user.HcnUsername : user.DisplayName;
+        OperatorButton.Content = $"HCN: {name} ({user.HcnUsername})";
+        Title = $"Remitter.NET - {name} ({user.HcnUsername})";
+    }
+
+    private void SetOperatorUnresolved()
+    {
+        _currentOperator = null;
+        OperatorButton.Content = "HCN user unresolved";
+        Title = "Remitter.NET";
+    }
+
+    private void ShowOperatorDialog()
+    {
+        if (_api is null || _busy)
+            return;
+
+        var dialog = new OperatorDialog(this, _api, _windowsIdentity, _currentOperator);
+        if (dialog.ShowDialog() == true && dialog.SelectedUser is not null)
+        {
+            AcceptOperator(dialog.SelectedUser);
+            SetStatus($"HCN user set to {dialog.SelectedUser.DisplayName} ({dialog.SelectedUser.HcnUsername}).", Brushes.ForestGreen);
+        }
+        else if (_currentOperator is null)
+        {
+            SetOperatorUnresolved();
+            SetStatus("HCN user unresolved. Queue remains available.", Brushes.Goldenrod);
+        }
+    }
+
+    private void ChangeUser_Click(object sender, RoutedEventArgs e)
+        => ShowOperatorDialog();
 
     private async void Refresh_Click(object sender, RoutedEventArgs e)
         => await RefreshAsync(false);
