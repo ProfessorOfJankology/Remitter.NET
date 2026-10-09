@@ -390,6 +390,40 @@ public partial class MainWindow : Window
         MessageBox.Show(this, row.StatusDetail, "Payment status", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private async void EditAllocation_Click(object sender, RoutedEventArgs e)
+    {
+        if (_api is null || _busy || (sender as FrameworkElement)?.DataContext is not PaymentRowViewModel row)
+            return;
+
+        PaymentLeaseResponse lease;
+        try
+        {
+            SetBusy(true, "Acquiring allocation edit lease…");
+            lease = await _api.AcquirePaymentLeaseAsync(row.Id);
+            if (lease.Version != row.Version)
+            {
+                await _api.ReleasePaymentLeaseAsync(row.Id, lease.Token);
+                SetStatus("Payment changed. Refresh before editing allocations.", Brushes.DarkOrange);
+                await RefreshAsync(true);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, SafeMessage(ex), "Cannot edit allocation", MessageBoxButton.OK, MessageBoxImage.Error);
+            SetStatus("Service allocation could not be opened for editing.", Brushes.Firebrick);
+            return;
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+
+        var dialog = new AllocationDialog(this, _api, lease);
+        dialog.ShowDialog();
+        await RefreshAsync(true);
+    }
+
     private async void PaymentsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (_api is null || _manualAdd is null || _busy || PaymentsGrid.SelectedItem is not PaymentRowViewModel row)
