@@ -26,8 +26,10 @@ public sealed class ServiceRowViewModel
         Paid = PaymentPresentation.Currency(service.BasePaid);
         TaxPaid = PaymentPresentation.Currency(service.TaxPaid);
         Outstanding = PaymentPresentation.Currency(service.Outstanding);
-        allocation?.Gross?.TryGetValue(service.ServiceId, out var gross);
-        allocation?.Tax?.TryGetValue(service.ServiceId, out var tax);
+        string? gross = null;
+        string? tax = null;
+        allocation?.Gross?.TryGetValue(service.ServiceId, out gross);
+        allocation?.Tax?.TryGetValue(service.ServiceId, out tax);
         Allocation = PaymentPresentation.Currency(gross);
         TaxAllocation = PaymentPresentation.Currency(tax);
     }
