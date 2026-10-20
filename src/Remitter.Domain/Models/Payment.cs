@@ -63,7 +63,7 @@ public sealed class ServiceLine
     [JsonPropertyName("base_paid")] public string? BasePaid { get; set; }
     [JsonPropertyName("tax_paid")] public string? TaxPaid { get; set; }
     [JsonPropertyName("outstanding")] public string? Outstanding { get; set; }
-    [JsonPropertyName("cancelled")] public int Cancelled { get; set; }
+    [JsonPropertyName("cancelled")] public bool Cancelled { get; set; }
 }
 
 public sealed class AllocationPreview
