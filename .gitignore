@@ -22,3 +22,4 @@ appsettings.Local.json
 *.local.json
 *.secrets.json
 .env
+src/Remitter.App/config.ini
