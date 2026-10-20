@@ -277,7 +277,7 @@ public partial class AllocationDialog : Window
             OutstandingRaw = service.Outstanding ?? "0.00";
             OutstandingDisplay = PaymentPresentation.Currency(service.Outstanding);
             TaxAllocationDisplay = PaymentPresentation.Currency(taxAllocation);
-            Cancelled = service.Cancelled != 0;
+            Cancelled = service.Cancelled;
             Allocation = allocation;
         }
     }
