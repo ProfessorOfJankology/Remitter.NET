@@ -1,3 +1,4 @@
+using Xunit;
 using Remitter.Domain.Models;
 using Remitter.Domain.Presentation;
 
