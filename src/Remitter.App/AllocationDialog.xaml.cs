@@ -39,7 +39,8 @@ public partial class AllocationDialog : Window
             if (!_allValues.ContainsKey(service.ServiceId))
                 _allValues[service.ServiceId] = "0.00";
 
-            payment.Allocation?.Tax?.TryGetValue(service.ServiceId, out var taxAllocation);
+            string? taxAllocation = null;
+            payment.Allocation?.Tax?.TryGetValue(service.ServiceId, out taxAllocation);
             Rows.Add(new AllocationRow(service, _allValues[service.ServiceId], taxAllocation));
         }
 

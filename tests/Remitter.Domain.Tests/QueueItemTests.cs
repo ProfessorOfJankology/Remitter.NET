@@ -1,3 +1,4 @@
+using Xunit;
 using Remitter.Domain.Models;
 
 namespace Remitter.Domain.Tests;
